@@ -11,8 +11,8 @@ To achieve it, one should know what are people doing there in the meeting, e.g. 
 * Output: heat map (the possibility of every pixel in the image being looked at by that person) and predicted coordinate of the gaze
 
 # Some implementations here are from
-* Multi-object tracking (https://github.com/bikz05/object-tracker)
-* Gaze following algorithm (http://gazefollow.csail.mit.edu/)
+* [Multi-object tracking] (https://github.com/bikz05/object-tracker)
+* [Gaze following algorithm] (http://gazefollow.csail.mit.edu/)
 
 # Requirement
-One should install properly apollocaffe in order to run the code, please check https://github.com/Russell91/apollocaffe
+One should install properly apollocaffe in order to run the code, please check [Apollocaffe repository] (https://github.com/Russell91/apollocaffe)
