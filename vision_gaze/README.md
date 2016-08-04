@@ -3,8 +3,8 @@ This module aims at capturing human-human and human-object interactions in the m
 To achieve it, one should know what are people doing there in the meeting, e.g. watching laptop, presentation, or other people when they speak. This information may allow us, for instance, to make inference on the subject being presented during the meeting would interest the participants by looking at the period of most of the participants staring at the presentation slides.
 
 # Functions
-* Predict gaze from single image
-* Predict gaze from video files (treat every frame as a single image)
+* Predict gaze from single image (vision_gaze/gazepredict_image.py)
+* Predict gaze from video files (it treats every frame as a single image) (gazepredict_video.py)
 
 # Input / Output of gaze prediction
 * Input: image (or video) and head location of person of interest (this can be done in simple UI drawing a bounding box around person of interest)
