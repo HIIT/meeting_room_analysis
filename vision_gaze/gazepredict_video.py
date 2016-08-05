@@ -13,7 +13,7 @@ import object_tracker.get_points as get_points
 
 def detect(video_path):
     cam = cv2.VideoCapture(video_path)
-    cam.set(1, 21900)
+    cam.set(1, 20000)
     # If Camera Device is not opened, exit the program
     if not cam.isOpened():
         print "Video device or file couldn't be opened"
@@ -35,9 +35,7 @@ def detect(video_path):
     cv2.destroyWindow("Image")'''
 
     retval, img = cam.read()
-    print img.shape
     #img = img[100::, 250:1100, ::].astype('uint8')
-    print img.shape
     # Co-ordinates of objects to be tracked
     # will be stored in a list named `points`
     points = get_points.run(img)
@@ -94,12 +92,11 @@ def gaze_prediction_pipeline(video_path, POI=None, dispLoc=False):
         #pt1, pt2 = track(tracker, img)
         #cv2.rectangle(img, pt1, pt2, (255, 255, 255), 3)
 
-        pt1s = []
-        pt2s = []
+        head_boxes = []
         for i in xrange(len(tracker)):
             pt1, pt2 = track(tracker[i], img)
-            pt1s.append(pt1)
-            pt2s.append(pt2)
+            head_boxes.append([pt1[0], pt1[1], pt2[0], pt2[1]])
+
             #print "Object tracked at [{}, {}] \r".format(pt1, pt2),
             if dispLoc:
                 rect = tracker.get_position()
@@ -110,18 +107,20 @@ def gaze_prediction_pipeline(video_path, POI=None, dispLoc=False):
         if frame_idx % 150 == 0:
             #pwd = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/'
             pwd = '../../results/'
-            for i, (pt1, pt2) in enumerate(zip(pt1s, pt2s), 1):
-                filename = pwd + '%d_p%d_gazemap.png' % (frame_idx, i)
-                #cv2.rectangle(img, pt1, pt2, (255, 255, 255), 3)
-                net = gaze_predict(img, np.array([[pt1[0], pt1[1]], [pt2[0], pt2[1]]]))
-                fig = net.result_viz('bicubic')
 
-                fig.savefig(filename)
-                #plt.show()
-                #plt.pause(0.01)
+            #for i, (pt1, pt2) in enumerate(zip(pt1s, pt2s), 1):
+            filename = pwd + '%d_p%d_gazemap.png' % (frame_idx, i)
+            #cv2.rectangle(img, pt1, pt2, (255, 255, 255), 3)
+            net = gaze_predict(img, head_boxes)
+            figs = net.result_viz('bicubic', person_specific=False)
 
-                #fig.clf()
-                #plt.close()
+            for fig in figs:
+                plt.figure(fig.number)
+                plt.pause(0.01)
+            #fig.savefig(filename)
+            #plt.show()
+            #fig.clf()
+            #plt.close()
             save_count += 1
             if save_count > 50:
                 break
@@ -136,8 +135,8 @@ def gaze_prediction_pipeline(video_path, POI=None, dispLoc=False):
 
 if __name__ == "__main__":
     #pwd_test = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/test_images/'
-    pwd_test = '../../test_videos/20150827/'
-    video_path = pwd_test + 'MVI_0023.MP4'
+    pwd_test = '../../test_videos/2016-04-08-pr-psycho/'
+    video_path = pwd_test + 'MVI_0056.MP4'
 
     '''parser = ap.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)

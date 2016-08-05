@@ -18,20 +18,23 @@ def ind2sub(array_shape, ind):
     return (row, col)
 
 class GazeFollowNet(object):
-    def __init__(self, input_image, head_box, net=None):
+    # head_boxes: [num of heads, [x1, y1, x2, y2]]
+    def __init__(self, input_image, head_boxes, net=None):
         self.net = apollocaffe.ApolloNet()
 
-        self.head_box = np.copy(head_box)
+        self.head_boxes = np.copy(head_boxes)
         self.output_ready = False
 
-        self.average_map = np.zeros([15, 15])
-        self.final_map = None
+        self.final_maps = []
         self.predictions = []
-        self.n_predictions = 5
         # preparing inputs
-        self.inputs = input_gazenet(input_image, self.head_box)
+        self.inputs = input_gazenet(input_image, self.head_boxes)
+
         # define network structure
-        self.forward()
+        # input with some dummy data first, it doesn't matter the result
+        self.forward(img=self.inputs.input_image_resize, \
+                     eye_img=self.inputs.eye_images_resize[0], \
+                     eye_grid=self.inputs.eyes_grids_flat[0])
         # init the net with parameters trained in binary_w.caffemodel
         self.net.load(self.weights_file())
 
@@ -41,37 +44,60 @@ class GazeFollowNet(object):
             raise OSError('%s not found!' % filename)
         return filename
 
-    def result_viz(self, interp='bicubic'):
+    def result_viz(self, interp='bicubic', person_specific=False):
+        figs = []
         image_with_frame = np.copy(self.inputs.input_image)
-        top_left_x = int(self.head_box[0, 0])
-        top_left_y = int(self.head_box[0, 1])
-        bottom_right_x = int(self.head_box[1, 0])
-        bottom_right_y = int(self.head_box[1, 1])
-        print 'gaze prediction at ', self.predictions
-        cv2.rectangle(image_with_frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color=(20, 200, 20), thickness=3)
-        if 1:
-            for prediction in self.predictions:
-                cv2.circle(image_with_frame, center=(prediction[1], prediction[0]), color=(200, 20, 20), radius=10, thickness=-1)
-                cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
-                    pt2=(prediction[1], prediction[0]), color=(20, 200, 20), thickness=3)
 
-        fig = plt.figure(1)
+        for idx, (head_box, gaze_prediction, final_map) in enumerate(zip(self.head_boxes, self.predictions, self.final_maps), 1):
+            if person_specific:
+                fig = plt.figure(idx)
+                image_with_frame = np.copy(self.inputs.input_image)
+            else:
+                fig = plt.figure(1)
+
+            top_left_x = int(head_box[0])
+            top_left_y = int(head_box[1])
+            bottom_right_x = int(head_box[2])
+            bottom_right_y = int(head_box[3])
+            
+            # draw head box
+            cv2.rectangle(image_with_frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color=(20, 200, 20), thickness=3)
+            # draw predicted gaze coordinate
+            cv2.circle(image_with_frame, center=(gaze_prediction[1], gaze_prediction[0]), color=(200, 20, 20), radius=10, thickness=-1)
+            # draw line connecting center of the head box and the predicted gaze coordinate
+            cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
+                        pt2=(gaze_prediction[1], gaze_prediction[0]), color=(20, 200, 20), thickness=3)
+
+            if person_specific:
+                plt.imshow(image_with_frame)
+                plt.hold(True)
+                plt.imshow(final_map, alpha=0.3)
+                figs.append(fig)
+
+        if person_specific:
+            return figs
+
         plt.imshow(image_with_frame)
         plt.hold(True)
-        plt.imshow(self.final_map, alpha=0.3)
+        for final_map in self.final_maps:
+            plt.imshow(final_map, alpha=0.3)
+            plt.hold(True)
+        figs.append(fig)
 
-        return fig
+        return figs
 
     def run(self):
-        self.forward()
-        self.output_ready = True
-        self.process_output()
+        for eye_image_resize, eyes_grid_flat in zip(self.inputs.eye_images_resize, self.inputs.eyes_grids_flat):
+            self.forward(self.inputs.input_image_resize, eye_image_resize, eyes_grid_flat)
+            self.output_ready = True
+            final_map = self.process_output()
 
-        flatten_final_map = self.final_map.flatten()
-        for _ in range(self.n_predictions):
+            flatten_final_map = final_map.flatten()
+
             max_idx = np.argmax(flatten_final_map)
             flatten_final_map[max_idx] = 0
-            self.predictions.append(ind2sub(self.final_map.shape, max_idx))
+            self.predictions.append(ind2sub(final_map.shape, max_idx))
+            self.final_maps.append(final_map)
 
         '''return self.net.blobs["fc_0_0_reshape"].data, \
                 self.net.blobs["fc_1_0_reshape"].data, \
@@ -111,6 +137,7 @@ class GazeFollowNet(object):
         shifted_y = [0, 0, 0, -1, 1]
 
         count_map = np.ones([15, 15])
+        average_map = np.zeros([15, 15])
         for delta_x, delta_y, gaze_grids in zip(shifted_x, shifted_y, gaze_grid_list):
             for x in range(0, 5):
                 for y in range(0, 5):
@@ -119,18 +146,20 @@ class GazeFollowNet(object):
                     fx = self.shifted_mapping(x, delta_x, False)
                     fy = self.shifted_mapping(y, delta_y, False)
 
-                    self.average_map[ix:fx+1, iy:fy+1] += gaze_grids[x, y]
+                    average_map[ix:fx+1, iy:fy+1] += gaze_grids[x, y]
                     count_map[ix:fx+1, iy:fy+1] += 1
 
-        self.average_map = self.average_map / count_map
-        self.final_map = misc.imresize(self.average_map, self.inputs.input_image.shape, interp='bicubic')
+        average_map = average_map / count_map
+        final_map = misc.imresize(average_map, self.inputs.input_image.shape, interp='bicubic')
 
-    def forward(self):
+        return final_map
+
+    def forward(self, img, eye_img, eye_grid):
         # inputs
         self.net.clear_forward()
-        self.net.f(layers.NumpyData("data", data=self.inputs.input_image_resize))
-        self.net.f(layers.NumpyData("face", data=self.inputs.eye_image_resize))
-        self.net.f(layers.NumpyData("eyes_grid", data=self.inputs.eyes_grid_flat))
+        self.net.f(layers.NumpyData("data", data=img))
+        self.net.f(layers.NumpyData("face", data=eye_img))
+        self.net.f(layers.NumpyData("eyes_grid", data=eye_grid))
 
         for layer in self.net_proto():
             self.net.f(layer)
