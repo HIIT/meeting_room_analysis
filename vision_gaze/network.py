@@ -35,9 +35,6 @@ class GazeFollowNet(object):
         # init the net with parameters trained in binary_w.caffemodel
         self.net.load(self.weights_file())
 
-    def get_net():
-        return self.net
-
     def weights_file(self):
         filename = 'model/binary_w.caffemodel'
         if not os.path.exists(filename):
