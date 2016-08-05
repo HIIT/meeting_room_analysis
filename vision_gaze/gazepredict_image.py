@@ -43,25 +43,22 @@ def gaze_prediction_image(image_path):
         print "ERROR: No object to be tracked."
         exit()
 
-    pwd = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/'
-    for i, point in enumerate(points, 1):
-        pt1 = point[0:2]
-        pt2 = point[2:4]
+    net = gaze_predict(img, points)
+    person_specific = False
+    figs = net.result_viz('bicubic', person_specific=person_specific)
 
-        apollonet = None
-        filename = pwd + 'results_images/avp_p%d_gazemap.png' % i
-        #cv2.rectangle(img, pt1, pt2, (255, 255, 255), 3)
-        net = gaze_predict(img, np.array([[pt1[0], pt1[1]], [pt2[0], pt2[1]]]))
-        fig = net.result_viz('bicubic')
-
+    for i, fig in enumerate(figs, 1):
+        if person_specific:
+            filename = '../../results_image/linus_exactum_%d_gazemap.png' % i
+        else:
+            filename = '../../results_image/linus_exactum_gazemap.png'
+            
         fig.savefig(filename)
 
 if __name__ == "__main__":
-    pwd_test = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/test_images/'
-
     '''parser = ap.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-p', "--POI", help="Person of Interest")
     args = vars(parser.parse_args())'''
 
-    gaze_prediction_image(image_path=pwd_test + 'avp.jpg')
+    gaze_prediction_image(image_path='../../test_images/linus_exactum.jpg')
