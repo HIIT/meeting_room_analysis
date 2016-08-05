@@ -108,9 +108,10 @@ def gaze_prediction_pipeline(video_path, POI=None, dispLoc=False):
                 cv2.putText(img, txt, loc , cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
 
         if frame_idx % 150 == 0:
-            pwd = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/'
+            #pwd = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/'
+            pwd = '../../results/'
             for i, (pt1, pt2) in enumerate(zip(pt1s, pt2s), 1):
-                filename = pwd + 'results_20160620/%d_p%d_gazemap.png' % (frame_idx, i)
+                filename = pwd + '%d_p%d_gazemap.png' % (frame_idx, i)
                 #cv2.rectangle(img, pt1, pt2, (255, 255, 255), 3)
                 net = gaze_predict(img, np.array([[pt1[0], pt1[1]], [pt2[0], pt2[1]]]))
                 fig = net.result_viz('bicubic')
@@ -134,8 +135,9 @@ def gaze_prediction_pipeline(video_path, POI=None, dispLoc=False):
     return
 
 if __name__ == "__main__":
-    pwd_test = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/test_images/'
-    video_path = pwd_test + 'seg1.MP4'
+    #pwd_test = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/test_images/'
+    pwd_test = '../../test_videos/20150827/'
+    video_path = pwd_test + 'MVI_0023.MP4'
 
     '''parser = ap.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)

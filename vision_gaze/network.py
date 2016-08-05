@@ -39,7 +39,7 @@ class GazeFollowNet(object):
         return self.net
 
     def weights_file(self):
-        filename = '/home/wangt/Projects/apollocaffe_test/gaze_model/vision_gaze/model/binary_w.caffemodel'
+        filename = 'model/binary_w.caffemodel'
         if not os.path.exists(filename):
             raise OSError('%s not found!' % filename)
         return filename

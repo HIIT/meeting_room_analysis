@@ -2,15 +2,14 @@ import scipy
 import numpy as np
 from scipy import io, misc
 
-pwd = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/'
 class input_gazenet(object):
     def __init__(self, input_image, head_box):
         self.head_box = np.copy(head_box)
         self.net_input_shape = [227, 227]
 
         # load mean of images
-        self.places_mean = io.loadmat(pwd + 'places_mean_resize.mat')
-        self.imagenet_mean = io.loadmat(pwd + 'imagenet_mean_resize.mat')
+        self.places_mean = io.loadmat('model/places_mean_resize.mat')
+        self.imagenet_mean = io.loadmat('model/imagenet_mean_resize.mat')
         self.places_mean = self.places_mean['image_mean']
         self.imagenet_mean = self.imagenet_mean['image_mean']
 
