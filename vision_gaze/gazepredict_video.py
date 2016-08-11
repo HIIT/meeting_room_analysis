@@ -13,7 +13,7 @@ import object_tracker.get_points as get_points
 
 def detect(video_path):
     cam = cv2.VideoCapture(video_path)
-    cam.set(1, 20000)
+    cam.set(1, 10000)
     # If Camera Device is not opened, exit the program
     if not cam.isOpened():
         print "Video device or file couldn't be opened"
