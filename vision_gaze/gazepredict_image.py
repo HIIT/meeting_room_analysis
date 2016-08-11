@@ -36,7 +36,7 @@ def gaze_predict(img, head_loc, net=None):
 
     return net
 
-def gaze_prediction_image(image_path):
+def gaze_prediction_image(image_path, person_specific=False, is_visualize=False):
     img = cv2.imread(image_path)
     points = get_points.run(img)
     if not points:
@@ -44,16 +44,19 @@ def gaze_prediction_image(image_path):
         exit()
 
     net = gaze_predict(img, points)
-    person_specific = False
     figs = net.result_viz('bicubic', person_specific=person_specific)
 
     for i, fig in enumerate(figs, 1):
-        if person_specific:
-            filename = '../../results_image/linus_exactum_%d_gazemap.png' % i
+        if is_visualize:
+            plt.figure(i, bbox_inches='tight', pad_inches=0)
+            plt.show()
         else:
-            filename = '../../results_image/linus_exactum_gazemap.png'
-            
-        fig.savefig(filename)
+            if person_specific:
+                filename = '../../results_image/linus_exactum_%d_gazemap.png' % i
+            else:
+                filename = '../../results_image/linus_exactum_gazemap.png'
+
+            fig.savefig(filename, bbox_inches='tight', pad_inches=0, dpi=1000)
 
 if __name__ == "__main__":
     '''parser = ap.ArgumentParser()
@@ -61,4 +64,4 @@ if __name__ == "__main__":
     group.add_argument('-p', "--POI", help="Person of Interest")
     args = vars(parser.parse_args())'''
 
-    gaze_prediction_image(image_path='../../test_images/linus_exactum.jpg')
+    gaze_prediction_image(image_path='../../test_images/linus_exactum.jpg', person_specific=False, is_visualize=False)

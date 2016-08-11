@@ -46,43 +46,82 @@ class GazeFollowNet(object):
 
     def result_viz(self, interp='bicubic', person_specific=False):
         figs = []
-        image_with_frame = np.copy(self.inputs.input_image)
-
-        for idx, (head_box, gaze_prediction, final_map) in enumerate(zip(self.head_boxes, self.predictions, self.final_maps), 1):
-            if person_specific:
-                fig = plt.figure(idx)
+        if person_specific:
+            for idx, (head_box, gaze_prediction, final_map) in enumerate(zip(self.head_boxes, self.predictions, self.final_maps), 1):
+                if self.inputs.input_image.shape[1] > 1600:
+                    fig = plt.figure(idx, figsize=(self.inputs.input_image.shape[1] / 1000., self.inputs.input_image.shape[0] / 1000.), dpi=100)
+                else:
+                    fig = plt.figure(idx, dpi=100)
                 image_with_frame = np.copy(self.inputs.input_image)
-            else:
-                fig = plt.figure(1)
 
-            top_left_x = int(head_box[0])
-            top_left_y = int(head_box[1])
-            bottom_right_x = int(head_box[2])
-            bottom_right_y = int(head_box[3])
-            
-            # draw head box
-            cv2.rectangle(image_with_frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color=(20, 200, 20), thickness=3)
-            # draw predicted gaze coordinate
-            cv2.circle(image_with_frame, center=(gaze_prediction[1], gaze_prediction[0]), color=(200, 20, 20), radius=10, thickness=-1)
-            # draw line connecting center of the head box and the predicted gaze coordinate
-            cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
-                        pt2=(gaze_prediction[1], gaze_prediction[0]), color=(20, 200, 20), thickness=3)
+                top_left_x = int(head_box[0])
+                top_left_y = int(head_box[1])
+                bottom_right_x = int(head_box[2])
+                bottom_right_y = int(head_box[3])
 
-            if person_specific:
+                thickness, radius = 3, 10
+                if self.inputs.input_image.shape[1] > 1600:
+                    thickness, radius = 10, 30
+
+                # draw head box
+                cv2.rectangle(image_with_frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color=(20, 200, 20), thickness=3)
+                # draw predicted gaze coordinate
+                cv2.circle(image_with_frame, center=(gaze_prediction[1], gaze_prediction[0]), color=(200, 20, 20), radius=10, thickness=-1)
+                # draw line connecting center of the head box and the predicted gaze coordinate
+                cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
+                            pt2=(gaze_prediction[1], gaze_prediction[0]), color=(20, 200, 20), thickness=3)
+
+
                 plt.imshow(image_with_frame)
                 plt.hold(True)
-                plt.imshow(final_map, alpha=0.3)
+                plt.imshow(final_map, alpha=0.35)
+                plt.axis('off')
+                for axis in fig.axes:
+                    axis.get_xaxis().set_visible(False)
+                    axis.get_yaxis().set_visible(False)
+                plt.tight_layout(pad=0.)
                 figs.append(fig)
 
-        if person_specific:
-            return figs
+        else:
+            image_with_frame = np.copy(self.inputs.input_image)
+            if self.inputs.input_image.shape[1] > 1600:
+                fig = plt.figure(1, figsize=(self.inputs.input_image.shape[1] / 1000., self.inputs.input_image.shape[0] / 1000.), dpi=100)
+            else:
+                fig = plt.figure(1, dpi=100)
 
-        plt.imshow(image_with_frame)
-        plt.hold(True)
-        for final_map in self.final_maps:
-            plt.imshow(final_map, alpha=0.3)
+            # element-wise maximum computation for fusing the result from those 5 gaze maps
+            final_map = self.final_maps[0]
+            for map in self.final_maps[1::]:
+                final_map = np.fmax(map, final_map)
+
+            for head_box, gaze_prediction in zip(self.head_boxes, self.predictions):
+                top_left_x = int(head_box[0])
+                top_left_y = int(head_box[1])
+                bottom_right_x = int(head_box[2])
+                bottom_right_y = int(head_box[3])
+
+                thickness, radius = 3, 10
+                if self.inputs.input_image.shape[1] > 1600:
+                    thickness, radius = 10, 30
+
+                # draw head box
+                cv2.rectangle(image_with_frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color=(20, 200, 20), thickness=thickness)
+                # draw predicted gaze coordinate
+                cv2.circle(image_with_frame, center=(gaze_prediction[1], gaze_prediction[0]), color=(220, 220, 255), radius=radius, thickness=-1)
+                # draw line connecting center of the head box and the predicted gaze coordinate
+                cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
+                            pt2=(gaze_prediction[1], gaze_prediction[0]), color=(20, 200, 20), thickness=thickness)
+
+            plt.imshow(image_with_frame)
             plt.hold(True)
-        figs.append(fig)
+            plt.imshow(final_map, alpha=0.35)
+            plt.axis('off')
+            for axis in fig.axes:
+                axis.get_xaxis().set_visible(False)
+                axis.get_yaxis().set_visible(False)
+
+            plt.tight_layout(pad=0.)
+            figs.append(fig)
 
         return figs
 

@@ -71,10 +71,10 @@ def gaze_predict(img, head_loc, net=None):
     return net
 
 # detect -> track head -> predict gaze
-def gaze_prediction_pipeline(video_path, POI=None, dispLoc=False):
-    video_source, img, init_head_loc = detect(video_path)
-    tracker = [dlib.correlation_tracker() for _ in xrange(len(init_head_loc))]
-    [tracker[i].start_track(img, dlib.rectangle(*rect)) for i, rect in enumerate(init_head_loc)]
+def gaze_prediction_pipeline(video_path, person_specific=False, is_visualize=False):
+    video_source, img, init_head_locs = detect(video_path)
+    tracker = [dlib.correlation_tracker() for _ in xrange(len(init_head_locs))]
+    [tracker[i].start_track(img, dlib.rectangle(*rect)) for i, rect in enumerate(init_head_locs)]
 
     count = -1
     save_count = -1
@@ -97,30 +97,25 @@ def gaze_prediction_pipeline(video_path, POI=None, dispLoc=False):
             pt1, pt2 = track(tracker[i], img)
             head_boxes.append([pt1[0], pt1[1], pt2[0], pt2[1]])
 
-            #print "Object tracked at [{}, {}] \r".format(pt1, pt2),
-            if dispLoc:
-                rect = tracker.get_position()
-                loc = (int(rect.left()), int(rect.top()-20))
-                txt = "Object tracked at [{}, {}]".format(pt1, pt2)
-                cv2.putText(img, txt, loc , cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
-
         if frame_idx % 150 == 0:
-            #pwd = '/home/wangt/Projects/apollocaffe_test/gaze_model/python/'
             pwd = '../../results/'
 
-            #for i, (pt1, pt2) in enumerate(zip(pt1s, pt2s), 1):
             filename = pwd + '%d_p%d_gazemap.png' % (frame_idx, i)
-            #cv2.rectangle(img, pt1, pt2, (255, 255, 255), 3)
             net = gaze_predict(img, head_boxes)
-            figs = net.result_viz('bicubic', person_specific=False)
+            person_specific = False
+            figs = net.result_viz('bicubic', person_specific=person_specific)
 
-            for fig in figs:
-                plt.figure(fig.number)
-                plt.pause(0.01)
-            #fig.savefig(filename)
-            #plt.show()
-            #fig.clf()
-            #plt.close()
+            for i, fig in enumerate(figs, 1):
+                if is_visualize:
+                    plt.figure(fig.number, bbox_inches='tight', pad_inches=0)
+                    plt.pause(0.01)
+                else:
+                    if person_specific:
+                        filename = '../../results_video/%d_p%d_gazemap.png' % (frame_idx, i)
+                    else:
+                        filename = '../../results_video/%d_all_gazemap.png' % (frame_idx)
+
+                    fig.savefig(filename, bbox_inches='tight', pad_inches=0, dpi='figure')
             save_count += 1
             if save_count > 50:
                 break
@@ -144,4 +139,4 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())'''
 
     #gaze_prediction_pipeline(video_path, args["POI"])
-    gaze_prediction_pipeline(video_path)
+    gaze_prediction_pipeline(video_path, person_specific=False, is_visualize=False)
