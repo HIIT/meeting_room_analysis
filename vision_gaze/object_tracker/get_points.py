@@ -6,7 +6,7 @@ def run(im, multi=True):
     im_disp = im.copy()
     im_draw = im.copy()
     window_name = "Select objects to be tracked here."
-    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    cv2.namedWindow(window_name, cv2.WINDOW_OPENGL)
     cv2.imshow(window_name, im_draw)
 
     # List containing top-left and bottom-right to crop the image.

@@ -85,7 +85,7 @@ class GazeFollowNet(object):
         else:
             image_with_frame = np.copy(self.inputs.input_image)
             if self.inputs.input_image.shape[1] > 1600:
-                fig = plt.figure(1, figsize=(self.inputs.input_image.shape[1] / 1000., self.inputs.input_image.shape[0] / 1000.), dpi=100)
+                fig = plt.figure(1, figsize=(self.inputs.input_image.shape[1] / 500., self.inputs.input_image.shape[0] / 500.), dpi=100)
             else:
                 fig = plt.figure(1, dpi=100)
 

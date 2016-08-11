@@ -64,4 +64,4 @@ if __name__ == "__main__":
     group.add_argument('-p', "--POI", help="Person of Interest")
     args = vars(parser.parse_args())'''
 
-    gaze_prediction_image(image_path='../../test_images/linus_exactum.jpg', person_specific=False, is_visualize=False)
+    gaze_prediction_image(image_path='../../test_images/linus_exactum.jpg', person_specific=False, is_visualize=True)
