@@ -66,10 +66,10 @@ class GazeFollowNet(object):
                 # draw head box
                 cv2.rectangle(image_with_frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color=(20, 200, 20), thickness=3)
                 # draw predicted gaze coordinate
-                cv2.circle(image_with_frame, center=(gaze_prediction[1], gaze_prediction[0]), color=(200, 20, 20), radius=10, thickness=-1)
+                #cv2.circle(image_with_frame, center=(gaze_prediction[1], gaze_prediction[0]), color=(200, 20, 20), radius=10, thickness=-1)
                 # draw line connecting center of the head box and the predicted gaze coordinate
-                cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
-                            pt2=(gaze_prediction[1], gaze_prediction[0]), color=(20, 200, 20), thickness=3)
+                #cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
+                #            pt2=(gaze_prediction[1], gaze_prediction[0]), color=(20, 200, 20), thickness=3)
 
 
                 plt.imshow(image_with_frame)
@@ -107,10 +107,10 @@ class GazeFollowNet(object):
                 # draw head box
                 cv2.rectangle(image_with_frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color=(20, 200, 20), thickness=thickness)
                 # draw predicted gaze coordinate
-                cv2.circle(image_with_frame, center=(gaze_prediction[1], gaze_prediction[0]), color=(220, 220, 255), radius=radius, thickness=-1)
+                #cv2.circle(image_with_frame, center=(gaze_prediction[1], gaze_prediction[0]), color=(220, 220, 255), radius=radius, thickness=-1)
                 # draw line connecting center of the head box and the predicted gaze coordinate
-                cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
-                            pt2=(gaze_prediction[1], gaze_prediction[0]), color=(20, 200, 20), thickness=thickness)
+                #cv2.line(image_with_frame, pt1=((top_left_x+bottom_right_x+1)>>1, (top_left_y+bottom_right_y)>>1), \
+                #            pt2=(gaze_prediction[1], gaze_prediction[0]), color=(20, 200, 20), thickness=thickness)
 
             plt.imshow(image_with_frame)
             plt.hold(True)
@@ -304,7 +304,6 @@ class GazeFollowNet(object):
                                 bias_filler=bias_filler5, num_output=200),
             layers.ReLU(name="relu8_face", bottoms=["fc8_face"], tops=["fc8_face"]),
 
-            # mismatch with deploy_demo.prototxt!
             layers.InnerProduct(name="importance_no_sigmoid", bottoms=["fc8_face"], tops=["importance_no_sigmoid"], param_lr_mults=[0.2, 0.0],
                                 param_decay_mults=[1.0, 0.0],
                                 weight_filler=layers.Filler("gaussian", 0.01), num_output=169),
