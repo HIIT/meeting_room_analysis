@@ -13,7 +13,7 @@ import object_tracker.get_points as get_points
 
 def detect(video_path):
     cam = cv2.VideoCapture(video_path)
-    cam.set(1, 10000)
+    cam.set(1, 55000)
     # If Camera Device is not opened, exit the program
     if not cam.isOpened():
         print "Video device or file couldn't be opened"
@@ -35,7 +35,8 @@ def detect(video_path):
     cv2.destroyWindow("Image")'''
 
     retval, img = cam.read()
-    #img = img[100::, 250:1100, ::].astype('uint8')
+    #img = img[200::, 180:1050, ::].astype('uint8')
+    cv2.imwrite('test.png', img)
     # Co-ordinates of objects to be tracked
     # will be stored in a list named `points`
     points = get_points.run(img)
@@ -83,7 +84,7 @@ def gaze_prediction_pipeline(video_path, person_specific=False, is_visualize=Fal
     while True:
         count += 1
         retval, img = video_source.read()
-        #img = img[100::, 250:1100, ::].astype('uint8')
+        #img = img[200::, 180:1050, ::].astype('uint8')
         frame_idx = int(video_source.get(1))
 
         if not retval:
@@ -97,12 +98,9 @@ def gaze_prediction_pipeline(video_path, person_specific=False, is_visualize=Fal
             pt1, pt2 = track(tracker[i], img)
             head_boxes.append([pt1[0], pt1[1], pt2[0], pt2[1]])
 
-        if frame_idx % 150 == 0:
+        if frame_idx % 30 == 0:
             pwd = '../../results/'
-
-            filename = pwd + '%d_p%d_gazemap.png' % (frame_idx, i)
             net = gaze_predict(img, head_boxes)
-            person_specific = False
             figs = net.result_viz('bicubic', person_specific=person_specific)
 
             for i, fig in enumerate(figs, 1):
@@ -111,13 +109,13 @@ def gaze_prediction_pipeline(video_path, person_specific=False, is_visualize=Fal
                     plt.pause(0.01)
                 else:
                     if person_specific:
-                        filename = '../../results_video/%d_p%d_gazemap.png' % (frame_idx, i)
+                        filename = '../../results_video/2016-04-08-pr-psycho2/%d_p%d_gazemap.png' % (frame_idx, i)
                     else:
-                        filename = '../../results_video/%d_all_gazemap.png' % (frame_idx)
+                        filename = '../../results_video/2016-04-08-pr-psycho2/%d_all_gazemap.png' % (frame_idx)
 
                     fig.savefig(filename, bbox_inches='tight', pad_inches=0, dpi='figure')
             save_count += 1
-            if save_count > 50:
+            if save_count > 150:
                 break
 
         #cv2.imshow("Image", img)
@@ -139,4 +137,4 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())'''
 
     #gaze_prediction_pipeline(video_path, args["POI"])
-    gaze_prediction_pipeline(video_path, person_specific=False, is_visualize=False)
+    gaze_prediction_pipeline(video_path, person_specific=True, is_visualize=False)

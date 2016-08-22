@@ -7,16 +7,13 @@ import object_tracker.get_points as get_points
 
 def detect(video_path):
     cam = cv2.VideoCapture(video_path)
-    cam.set(1, 21900)
     # If Camera Device is not opened, exit the program
     if not cam.isOpened():
         print "Video device or file couldn't be opened"
         exit()
 
     retval, img = cam.read()
-    print img.shape
     #img = img[100::, 250:1100, ::].astype('uint8')
-    print img.shape
     # Co-ordinates of objects to be tracked
     # will be stored in a list named `points`
     points = get_points.run(img)
@@ -52,11 +49,11 @@ def gaze_prediction_image(image_path, person_specific=False, is_visualize=False)
             plt.show()
         else:
             if person_specific:
-                filename = '../../results_image/linus_exactum_%d_gazemap.png' % i
+                filename = '../../results_image/linus_conversation4_%d_gazemap.png' % i
             else:
-                filename = '../../results_image/linus_exactum_gazemap.png'
+                filename = '../../results_image/linus_conversation4_gazemap.png'
 
-            fig.savefig(filename, bbox_inches='tight', pad_inches=0, dpi=1000)
+            fig.savefig(filename, bbox_inches='tight', pad_inches=0, dpi=200)
 
 if __name__ == "__main__":
     '''parser = ap.ArgumentParser()
@@ -64,4 +61,4 @@ if __name__ == "__main__":
     group.add_argument('-p', "--POI", help="Person of Interest")
     args = vars(parser.parse_args())'''
 
-    gaze_prediction_image(image_path='../../test_images/linus_exactum.jpg', person_specific=False, is_visualize=True)
+    gaze_prediction_image(image_path='../../test_images/linus_conversation3.jpg', person_specific=False, is_visualize=False)
