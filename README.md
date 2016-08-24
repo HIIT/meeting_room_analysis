@@ -6,4 +6,4 @@ The repository contains algorithms for analyzing signals recorded in meeting roo
 # Licence Information
 * Object tracking: under the MIT Licence
 * Apollocaffe and Caffe: under [BSD 2-Clause license] (https://github.com/BVLC/caffe/blob/master/LICENSE)
-* OpenCV: 3-clause BSD License
+* OpenCV: BSD 3-clause License
