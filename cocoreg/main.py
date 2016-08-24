@@ -16,7 +16,7 @@ def gen_artif_data(n_samples):
     X[0, :] = sin
     X[1, :] = sin2
     X[2, :] = sin3
-    
+
     return t, X
 
 def main():
